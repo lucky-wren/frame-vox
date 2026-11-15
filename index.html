@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="data:,">
+<title>帧语 NEXT · 内容驱动的四拍短片</title>
+<link rel="stylesheet" href="app.css">
+<style>
+.tpls{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.tplcard{display:flex;align-items:center;gap:8px;padding:7px;border:2px solid var(--line);
+  border-radius:12px;background:var(--card);color:var(--fg);cursor:pointer;text-align:left;font:inherit}
+.tplcard.on{border-color:var(--a1);box-shadow:0 0 0 2px color-mix(in srgb,var(--a1) 30%,transparent)}
+.tplcard>span{display:flex;flex-direction:column;font-size:12px;font-weight:800;line-height:1.3}
+.tplcard small{font-size:10px;font-weight:600;opacity:.6;margin-top:2px}
+.tplmini{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:9px;
+  clip-path:polygon(50% 0,60% 14%,76% 6%,78% 24%,96% 20%,88% 38%,100% 50%,88% 64%,96% 82%,76% 78%,72% 96%,54% 86%,50% 100%,34% 90%,20% 98%,18% 80%,2% 82%,10% 62%,0 50%,10% 36%,2% 20%,20% 22%,26% 4%,42% 14%);
+  font-style:normal;color:#fff;-webkit-text-stroke:2px #171034;font-size:16px;font-weight:900}
+.t-pop{background:linear-gradient(150deg,#ffe14d,#ff8a3d,#ff3d81)}
+.t-neon{background:linear-gradient(150deg,#7ef9ff,#3b82f6,#a855f7)}
+.t-hot{background:linear-gradient(150deg,#ffe14d,#ff6b35,#e11d48)}
+.t-lime{background:linear-gradient(150deg,#d9f99d,#4ade80,#0ea5e9)}
+/* 编排卡片：小缩略图直接画出骨架差别，不是同一色卡换字 */
+.lycard{display:flex;align-items:center;gap:9px;padding:8px;border:2px solid var(--line);
+  border-radius:12px;background:var(--card);color:var(--fg);cursor:pointer;text-align:left;font:inherit}
+.lycard.on{border-color:var(--a1);box-shadow:0 0 0 2px color-mix(in srgb,var(--a1) 30%,transparent)}
+.lycard>span{display:flex;flex-direction:column;font-size:12px;font-weight:800;line-height:1.3;min-width:0}
+.lycard small{font-size:10px;font-weight:600;opacity:.6;margin-top:2px}
+.lymini{width:38px;height:38px;flex:none;border-radius:8px;background:#12182a;
+  border:1px solid rgba(255,255,255,.2);box-sizing:border-box;position:relative;overflow:hidden}
+.lymini::before,.lymini::after{content:"";position:absolute}
+.lymini[data-k="burst"]{background:
+  radial-gradient(circle at 50% 32%,#ffe14d 0 30%,transparent 31%),
+  linear-gradient(180deg,transparent 62%,rgba(255,255,255,.75) 63% 70%,transparent 71%),
+  linear-gradient(180deg,transparent 78%,rgba(255,255,255,.45) 79% 84%,transparent 85%),#2b1b5e}
+.lymini[data-k="split"]{background:
+  linear-gradient(90deg,rgba(233,185,106,.85) 0 36%,rgba(255,255,255,.22) 36% 38%,rgba(255,255,255,.12) 38%),#2b1b5e}
+.lymini[data-k="chat"]{background:
+  linear-gradient(90deg,rgba(255,255,255,.5) 0 45%,transparent 45%) 4px 8px/30px 7px no-repeat,
+  linear-gradient(90deg,transparent 30%,rgba(255,225,77,.85) 30% 88%,transparent 88%) 0 18px/38px 7px no-repeat,
+  linear-gradient(90deg,rgba(255,255,255,.35) 0 38%,transparent 38%) 4px 28px/30px 6px no-repeat,#17324a}
+.lymini[data-k="poster"]{background:
+  linear-gradient(180deg,rgba(255,255,255,.85) 0 3px,transparent 3px) 3px 5px/32px 33px no-repeat,
+  linear-gradient(90deg,transparent 32%,rgba(255,255,255,.18) 32% 33%,transparent 33%,transparent 65%,rgba(255,255,255,.18) 65% 66%,transparent 66%) 3px 12px/32px 24px no-repeat,#f2ece0}
+.lymini[data-k="chart"]{background:
+  linear-gradient(90deg,rgba(126,249,255,.9) 0 32%,transparent 32%),
+  linear-gradient(180deg,transparent 18%,rgba(255,255,255,.4) 18% 27%,transparent 27%,transparent 42%,rgba(255,255,255,.4) 42% 51%,transparent 51%,transparent 66%,rgba(255,255,255,.4) 66% 75%,transparent 75%) 16px 0/22px 38px no-repeat,#102b4e}
+.lymini[data-k="sticky"]{background:
+  linear-gradient(135deg,rgba(255,225,77,.9) 0 42%,transparent 42%) 3px 4px/18px 16px no-repeat,
+  linear-gradient(135deg,rgba(255,255,255,.75) 0 42%,transparent 42%) 17px 14px/18px 16px no-repeat,
+  linear-gradient(135deg,rgba(126,249,255,.8) 0 42%,transparent 42%) 8px 22px/18px 14px no-repeat,#1d2b36}
+.lymini[data-k="cinema"]{background:
+  linear-gradient(180deg,#000 0 18%,transparent 18% 82%,#000 82%),
+  linear-gradient(180deg,transparent 46%,rgba(255,255,255,.8) 47% 53%,transparent 54%) 4px 0/30px 38px no-repeat,#12161c}
+.lymini[data-k="checklist"]{background:
+  radial-gradient(circle at 18% 22%,rgba(163,230,53,.95) 0 3px,transparent 4px),
+  radial-gradient(circle at 18% 50%,rgba(163,230,53,.95) 0 3px,transparent 4px),
+  radial-gradient(circle at 18% 78%,rgba(255,255,255,.35) 0 3px,transparent 4px),
+  linear-gradient(90deg,transparent 30%,rgba(255,255,255,.5) 30% 92%,transparent 92%) 0 12px/38px 14px no-repeat,#123c34}
+.lymini[data-k="grid9"]{background:
+  linear-gradient(90deg,transparent 31%,rgba(255,255,255,.25) 31% 34%,transparent 34%,transparent 65%,rgba(255,255,255,.25) 65% 68%,transparent 68%),
+  linear-gradient(180deg,transparent 31%,rgba(255,255,255,.25) 31% 34%,transparent 34%,transparent 65%,rgba(255,255,255,.25) 65% 68%,transparent 68%),
+  linear-gradient(90deg,rgba(255,107,53,.85) 0 30%,transparent 30%),#4a1024}
+/* 九套骨架缩略图：直接画出「画面主体」差别 */
+.skmini{width:38px;height:38px;flex:none;border-radius:8px;position:relative;overflow:hidden;
+  border:1px solid rgba(255,255,255,.22);box-sizing:border-box}
+.skmini::before,.skmini::after{content:"";position:absolute}
+.skmini[data-k="paper"]{background:
+  linear-gradient(90deg,rgba(255,255,255,.9) 0 62%,transparent 62%) 5px 7px/26px 11px no-repeat,
+  linear-gradient(180deg,transparent 60%,rgba(255,225,77,.9) 60% 88%,transparent 88%) 6px 0/24px 38px no-repeat,
+  radial-gradient(ellipse at 50% 70%,transparent 44%,rgba(200,57,44,.9) 46% 49%,transparent 51%),#f4efe2}
+.skmini[data-k="evidence"]{background:
+  linear-gradient(180deg,rgba(47,125,140,.9) 0 7px,transparent 7px) 4px 4px/30px 8px no-repeat,
+  linear-gradient(90deg,rgba(255,255,255,.92) 0 90%,transparent 90%) 4px 16px/30px 8px no-repeat,
+  linear-gradient(90deg,rgba(255,255,255,.92) 0 76%,transparent 76%) 4px 27px/30px 8px no-repeat,#e3ebee}
+.skmini[data-k="anchor"]{background:
+  radial-gradient(circle at 74% 28%,rgba(126,232,211,.85) 0 13px,transparent 14px),
+  linear-gradient(180deg,transparent 52%,rgba(255,255,255,.9) 53% 64%,transparent 65%) 4px 0/30px 38px no-repeat,#113344}
+.skmini[data-k="cork"]{background:
+  linear-gradient(135deg,rgba(255,243,168,.95) 0 45%,transparent 45%) 3px 4px/17px 15px no-repeat,
+  linear-gradient(135deg,rgba(169,229,216,.95) 0 45%,transparent 45%) 19px 14px/16px 15px no-repeat,
+  linear-gradient(135deg,rgba(255,208,196,.95) 0 45%,transparent 45%) 8px 24px/17px 13px no-repeat,#c9a377}
+.skmini[data-k="exam"]{background:
+  linear-gradient(180deg,transparent 0 8px,rgba(120,140,150,.28) 8px 9px,transparent 9px 17px,rgba(120,140,150,.28) 17px 18px,transparent 18px 26px,rgba(120,140,150,.28) 26px 27px,transparent 27px 35px,rgba(120,140,150,.28) 35px 36px) 3px 0/32px 38px no-repeat,
+  linear-gradient(180deg,transparent 40%,rgba(208,52,42,.9) 41% 44%,transparent 45%) 0 0/38px 38px no-repeat,#fbf8ef}
+.skmini[data-k="chat"]{background:
+  linear-gradient(180deg,#f7f9fa 0 8px,transparent 8px) 0 0/38px 38px no-repeat,
+  linear-gradient(90deg,rgba(255,255,255,.95) 0 55%,transparent 55%) 5px 12px/22px 8px no-repeat,
+  linear-gradient(90deg,transparent 32%,rgba(201,237,182,.95) 32% 90%,transparent 90%) 0 24px/38px 8px no-repeat,#e7ebee}
+.skmini[data-k="receipt"]{background:
+  linear-gradient(90deg,rgba(255,255,255,.95) 0 74%,transparent 74%) 9px 0/20px 38px no-repeat,
+  linear-gradient(180deg,transparent 30%,rgba(120,120,110,.35) 31% 34%,transparent 35%,transparent 60%,rgba(120,120,110,.35) 61% 64%,transparent 65%) 9px 0/20px 38px no-repeat,#26333a}
+.skmini[data-k="clip"]{background:
+  linear-gradient(135deg,rgba(246,243,233,.95) 0 48%,transparent 48%) 4px 6px/22px 16px no-repeat,
+  linear-gradient(135deg,rgba(255,250,240,.95) 0 48%,transparent 48%) 14px 20px/20px 14px no-repeat,
+  linear-gradient(90deg,rgba(226,206,150,.8) 0 100%,transparent 100%) 2px 2px/14px 5px no-repeat,#d9c8a6}
+.skmini[data-k="board"]{background:
+  linear-gradient(180deg,transparent 20%,rgba(26,95,168,.85) 21% 27%,transparent 28%,transparent 44%,rgba(207,53,43,.85) 45% 51%,transparent 52%,transparent 68%,rgba(19,122,82,.85) 69% 75%,transparent 76%) 5px 0/28px 38px no-repeat,
+  linear-gradient(180deg,transparent 92%,#b7c2bd 92%) 0 0/38px 38px no-repeat,#f4f8f5}
+</style>
+</head>
+<body data-theme="ink">
+
+<!-- ══ 顶栏：品牌 / 三步 / 画幅 / 主题 ══ -->
+<header class="top">
+  <div class="brand"><span class="dot"></span><b>帧语</b><small>NEXT</small></div>
+  <nav class="steps" id="steps" aria-label="制作步骤">
+    <button class="step on" data-step="1"><i>1</i><span>填内容</span></button>
+    <span class="arrow">›</span>
+    <button class="step" data-step="2"><i>2</i><span>选风格</span></button>
+    <span class="arrow">›</span>
+    <button class="step" data-step="3"><i>3</i><span>出片</span></button>
+  </nav>
+  <div class="topright">
+    <div class="ratio" role="group" aria-label="画幅">
+      <button id="r916" class="on">9:16</button><button id="r169">16:9</button>
+    </div>
+    <button id="btnTheme" class="ico" title="主题设置">◐ 主题</button>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ══ 左：步骤面板 ══ -->
+  <aside class="panel" id="panel">
+
+    <!-- ── STEP 1 ── -->
+    <section class="page on" data-page="1">
+      <div class="ph"><h2>写脚本</h2><p>按短视频写：3 秒钩子 → 反转 → 三层递进 → 一句带走。别按课件写。</p></div>
+
+      <button id="btnPlatform" class="primary" style="margin-bottom:16px">▶ 一键套用平台发布预设</button>
+
+      <div class="group"><h3>题材库 <small>10 类 · 9 形态 · <span id="topicCount">75 条</span> · 点卡片整套载入</small></h3>
+        <div class="catbar" id="fmtCats"></div>
+        <div class="catbar" id="topicCats"></div>
+        <input id="topicSearch" class="tsearch" placeholder="搜题干 / 热度 / 形态 / 分类，如 1.2 亿、清单、对比">
+        <div id="topicList" class="topiclist"></div>
+        <p class="tnote">「有依据」= 公开报道或平台页明确披露过传播量级；「常见度收录」= 权威机构反复澄清但未查到单一量级，
+          不冒充热搜。所有热度均为当时的历史量级，<b>不是实时榜单</b>。点卡片会整套替换题干、选项、钩子、反转、3 层口播、弹幕、带走句、来源，并按题材自动套模板。</p>
+      </div>
+
+      <div class="group"><h3>选题 <small>切换会载入整套示例题</small></h3>
+        <label class="fld"><span>内容形态 <em>换题干句式、花字、眉标与首帧构图，不只是配色</em></span>
+          <select id="f_fmt">
+            <option value="quiz">问句断言（原有判断题式）</option>
+            <option value="claim">辟谣声明 · 别再信「X」了</option>
+            <option value="list">清单体 · 3 个 X，第 2 个最上头</option>
+            <option value="compare">对比反转 · X 不是 Y</option>
+            <option value="number">数据拆解 · 这个数字被放大了</option>
+            <option value="story">事件悬念 · 后来反过来了</option>
+            <option value="debate">争议两派 · 评论区各占一半</option>
+            <option value="myth">冷知识 · 原来一直被说反了</option>
+            <option value="warn">避坑提醒 · 这一步最容易错</option>
+          </select>
+        </label>
+        <label class="fld"><span>题型</span>
+          <select id="f_type">
+            <option value="judge">判断题</option><option value="single">单选题</option>
+            <option value="multi">多选题</option><option value="kepu">科普 / 解说</option>
+          </select>
+        </label>
+        <label class="fld"><span>题干 <em>封面 / 钩子大字，保留问号</em></span>
+          <textarea id="f_q" rows="2">喝醋能软化血管、清除血栓吗？</textarea>
+        </label>
+        <label class="switchline"><input type="checkbox" id="f_showOpts" checked>
+          <span>钩子帧显示选项 <em>单选 / 多选 / 判断都铺在题干下方，不标正确答案</em></span></label>
+        <label class="switchline"><input type="checkbox" id="f_autoTpl" checked>
+          <span>按题材自动配套模板 <em>载入话题时切到该分类的配色</em></span></label>
+        <label class="switchline"><input type="checkbox" id="f_subSync" checked>
+          <span>字幕跟随口播 <em>字幕 = 画面大字 = 听到的第一句，关掉则用补充短句</em></span></label>
+<label class="switchline"><input type="checkbox" id="f_audience" checked><span>大众科普版（九套画面骨架 · 一个主体贯穿全片）</span></label>
+<p class="tnote" id="audienceHint" style="margin-top:6px">默认开启：在「选风格」页挑 A–I 九套骨架之一——试卷被逐帧批完、白板被写满、小票逐行打印、群聊往下滚，不是每帧一张 PPT 卡片。取消勾选则回到短视频花字版，下面 12 套编排才会生效。</p>
+      </div>
+
+      <div class="group"><h3>① 3 秒钩子 <small>制造冲突，禁止铺垫和报幕</small></h3>
+        <label class="fld"><span>钩子大字 <em>首帧冲突句，不剧透、不自我介绍</em></span>
+          <textarea id="f_hook" rows="2">问的是：喝进胃里的醋，能否碰到血管斑块</textarea>
+        </label>
+      </div>
+
+      <div class="group"><h3>② 口播脚本 <small>三层递进 + 弹幕 + 花字</small></h3>
+        <label class="fld"><span>看点标签 <em>3 个词，/ 分隔；首帧给预期，不剧透结论</em></span>
+          <input id="f_tags" value="醋酸 / 血管斑块 / 酸碱度"></label>
+        <label class="fld"><span>花字关键词 <em>用 | 分隔，每层一个，跟要点对齐，做画面大字水印</em></span>
+          <input id="f_hammers" value="稀释|不是水垢|肺和肾"></label>
+        <label class="fld"><span>画面补充条 <em>用 | 分隔，只上画面；不进口播、不进字幕</em></span>
+          <textarea id="f_notes" rows="2">血管斑块：长在血管壁里的脂质沉积，不是水垢|依据：醋酸进到胃里先被稀释|依据：斑块不是能被酸泡掉的污垢</textarea></label>
+        <label class="fld"><span>一句带走 <em>结尾能复述的短句，不抄答案</em></span>
+          <textarea id="f_takeaway" rows="2">别拿醋护血管，控好三高更实在</textarea></label>
+      </div>
+
+      <div class="group"><h3>题目 <small>科普 / 解说无选项</small></h3>
+        <label class="fld" id="fld_opts"><span>选项 <em>用 | 分隔</em></span>
+          <textarea id="f_opts" rows="2">正确|错误</textarea>
+        </label>
+        <label class="fld" id="fld_ans"><span id="label_ans">答案 / 结论 <em>只在最后一拍出现</em></span>
+          <input id="f_ans" value="错误">
+        </label>
+        <label class="fld"><span>拆解要点 <em>一行一条，一条一张卡</em></span>
+          <textarea id="f_points" rows="5">醋酸进到胃里，先被稀释，再被吸收代谢
+血管里的斑块，不是能被酸泡掉的污垢
+血液酸碱度由肺和肾牢牢调控</textarea>
+        </label>
+      </div>
+
+      <div class="group"><h3>封面 <small>发布时单独上传的静态图</small></h3>
+        <label class="fld"><span>栏目名 / 期号</span>
+          <div class="row2" style="margin:0">
+            <input id="f_column" value="帧语 · 每日一题" style="flex:2">
+            <input id="f_issue" value="NO. 001" style="flex:1">
+          </div>
+        </label>
+        <label class="fld"><span>封面标题 <em>留空则自动用题干</em></span>
+          <input id="f_coverTitle" value="" placeholder="留空 = 题干">
+        </label>
+        <label class="switchline"><input type="checkbox" id="f_useCover">
+          <span>把封面作为视频首帧 <em>静默 1.8s，不占朗读句</em></span></label>
+      </div>
+
+      <div class="group"><h3>收尾 <small>结论帧一次给完</small></h3>
+        <label class="fld"><span>结尾问句 <em>把句号改成问号，拉评论</em></span><input id="f_cta" value="记住这一条，比争论有用" placeholder="留空自动选一句"></label>
+        <label class="fld"><span>来源</span><input id="f_src" value="国家卫生健康委员会官网"></label>
+        <label class="fld"><span>免责声明 <em>只上画面，不朗读、不进字幕</em></span>
+          <textarea id="f_disclaim" rows="3">本内容仅作信息整理与知识分享，不构成医疗、法律或投资等专业建议；如有疑问请以官方发布及专业人士意见为准。</textarea>
+        </label>
+      </div>
+
+      <div class="hintbox">
+        <b>断言驱动 · 信息递进</b>
+        <div class="beats-mini">
+          <span>01 断言</span><span>02 看点</span><span>03 拆解</span><span>04 结论</span>
+        </div>
+        <p>不是「提问 → 先别急 → 三点平铺 → 答案」的课件节奏。首帧给反常识断言与看点预期，拆解逐层加码、把最反直觉的放最后，结论回扣并给可执行动作。科普 / 解说自动禁用「答案相反」「你选对了吗」这类答题话术。</p>
+      </div>
+
+      <button class="primary" data-go="2">下一步 · 选风格 →</button>
+    </section>
+
+    <!-- ── STEP 2 ── -->
+    <section class="page" data-page="2">
+      <div class="ph"><h2>选风格</h2><p>先挑「画面骨架」：一个物理主体贯穿全片，逐帧被使用。再挑配色。大众科普版开启时用九套骨架；点下面 12 套短视频编排会自动退出大众版。</p></div>
+
+      <div class="fld"><span>画面骨架 <em>A–I 九套 · 大众科普版专用 · 同一个物体被逐步使用，不是每帧一张独立版面</em></span>
+        <div class="tpls lycards" id="skeletons"></div>
+        <p class="tnote">A 手写批注流（主推）· B 证据截图流 · C 口播大字流 · D 便签墙 · E 试卷批改 ·
+          F 聊天消息流 · G 核实小票 · H 剪报拼贴 · I 白板手写。每套的画面主体、批注载体、帧间推进都不同：
+          同一张卷被批完、同一块板被写满、同一张小票打印完、同一段对话滚下去。选完再挑配色，<b>9 套骨架 × 12 套配色</b>。</p>
+      </div>
+
+      <div class="fld"><span>画面编排 <em>短视频版 12 套结构完全不同的模板：分区、气泡、报头、图表、便签、榜单、试卷、小票……六帧构图逐帧变化</em></span>
+        <div class="tpls lycards" id="layouts"></div>
+        <p class="tnote">以前 9 种「形态」只是同一副骨架换花字文案，构图一模一样。现在每套编排有独立 DOM 骨架与独立 CSS：
+          分屏对撞逐帧换栏比、聊天弹幕逐帧累加气泡、大字报有报头三栏与印章、仪表盘有数据条、便签逐帧移动、电影黑边留白、步骤清单打勾、九宫格逐格点亮。
+          选完再挑下面的配色，<b>9 × 12 组合</b>；字号体系始终统一。</p>
+      </div>
+
+      <div class="fld"><span>配色模板 <em>12 套：整套换渐变底色、爆炸形与贴纸，不改字号</em></span>
+        <div class="tpls" id="tpls"></div>
+        <p class="tnote">12 套模板：4 套通用 + 8 套按题材配套（健康 / 食物 / 厨房 / 热梗 / 消费 / 季节 / 动物 / 数字）。
+          载入话题时会按分类自动套用，也可在「写脚本」页关掉自动配套手动选。</p>
+      </div>
+
+      <div class="fld"><span>配色主题 <em>只改界面底色，成片以模板为准</em></span>
+        <div class="themes" id="themes">
+          <button class="tcard on" data-t="ink"><i style="--a:#101a24;--b:#e9b96a"></i>深墨金</button>
+          <button class="tcard" data-t="paper"><i style="--a:#f6f1e6;--b:#a8543c"></i>暖纸朱</button>
+          <button class="tcard" data-t="jade"><i style="--a:#eef4ef;--b:#3f7355"></i>青瓷绿</button>
+          <button class="tcard" data-t="cyber"><i style="--a:#171329;--b:#9b7bd8"></i>赛博紫</button>
+          <button class="tcard" data-t="sand"><i style="--a:#e8d9bd;--b:#8f6035"></i>牛皮纸</button>
+          <button class="tcard" data-t="mono"><i style="--a:#141617;--b:#8fb0b8"></i>曜石蓝</button>
+        </div>
+      </div>
+
+      <label class="fld"><span>文字大小 <em>上限；实际由内容自适应统一缩放</em></span>
+        <div class="sizes" id="sizes">
+          <button data-s="88">标准</button><button class="on" data-s="100">大字</button><button data-s="112">超大</button>
+        </div>
+      </label>
+      <label class="switchline"><input type="checkbox" id="f_autoFit" checked>
+        <span>内容自适应 <em>整片统一系数，短句放大填满、长句缩小避免溢出</em></span></label>
+      <label class="switchline"><input type="checkbox" id="f_guide">
+        <span>显示平台安全区辅助线 <em>仅预览，不进成片</em></span></label>
+      <div class="fitread" id="fitRead">自适应系数：计算中…</div>
+
+            <!-- ══ v7.1：音频与字幕工作台 · 原地入口（不再藏在顶栏小按钮里）══ -->
+      <div id="audioEntry" class="audio-entry">
+        <div class="ae-head"><span class="ae-ico">♫</span>
+          <div><b>音频与字幕工作台</b><small>人声 · 配乐 · 音效 · 混音 · 字幕 / 水印 / 片尾 全套设置</small></div>
+          <i>全套 →</i></div>
+        <div class="ae-grid" id="aeGrid">
+          <div class="ae-cell"><span>🎙 人声</span><b id="aeVoice">—</b></div>
+          <div class="ae-cell"><span>♫ 配乐</span><b id="aeBgm">—</b></div>
+          <div class="ae-cell"><span>✦ 音效</span><b id="aeSfx">—</b></div>
+          <div class="ae-cell"><span>▥ 混音</span><b id="aeMix">五路独立</b></div>
+          <div class="ae-cell"><span>☰ 字幕</span><b id="aeSub">—</b></div>
+          <div class="ae-cell"><span>⬇ 导出</span><b id="aeExp">WAV / MP3 / 清单</b></div>
+        </div>
+        <button id="btnOpenStudio" class="ae-btn">打开全套设置 →</button>
+        <div class="ae-list" id="aeList">29 个微软神经音色 · 3 首内置 CC0 真实音乐 · 5 首在线试听 · 8 段流程音效 · 五路实时电平 · 完整字幕水印片尾 · WAV/MP3/来源清单导出</div>
+      </div>
+
+<div id="legacyAudio" hidden>
+<div class="group"><h3>人声 <small>微软神经音色 · 并发合成</small></h3>
+        <label class="fld"><span>音色</span><select id="f_voice"></select></label>
+        <div class="row2">
+          <label class="fld"><span>语速</span><input type="range" id="f_rate" min="70" max="130" value="100"></label>
+          <div class="rateval" id="rateval">1.00×</div>
+        </div>
+        <div class="voicestat" id="vstat">在线接口：未测试。点「试听一句」确认音色可用。</div>
+        <div class="btnrow">
+          <button id="btnTryVoice" class="ghost">🔊 试听一句</button>
+          <button id="btnSynthAll" class="ghost">⚙ 并发合成</button>
+          <button id="btnSynthCancel" class="ghost">⏹ 取消</button>
+        </div>
+        <div class="synthbar"><div id="synthFill"></div></div>
+        <div class="synthtxt" id="synthTxt">0 / 0 句已合成</div>
+        <div class="synthlist" id="synthList"></div>
+        <div class="hintbox" style="margin-top:10px"><p>4 路并发、相同文案合并、单句 8 秒超时；失败只标红该句，再点一次只补失败句（已缓存的命中人声池，不重发）。</p></div>
+      </div>
+
+      <div class="fld"><span>配乐 <em>上传本地音频，预览与导出同源</em></span>
+        <label class="upload" id="bgmDrop">
+          <input type="file" id="f_bgm" accept="audio/*">
+          <b>⬆ 选择音频文件</b><small id="bgmName">尚未选择 · 也可拖拽到此处</small>
+        </label>
+        <div class="btnrow">
+          <button id="btnBgmPlay" class="ghost">▶ 试听</button>
+          <button id="btnBgmStop" class="ghost">⏹ 停止</button>
+          <button id="btnBgmClear" class="ghost">移除</button>
+        </div>
+      </div>
+
+      <label class="fld"><span>字幕</span>
+        <div class="sizes" id="subSw"><button class="on" data-v="1">开</button><button data-v="0">关</button></div>
+      </label>
+
+</div>
+
+      <button class="primary" data-go="3">下一步 · 出片 →</button>
+    </section>
+
+    <!-- ── STEP 3 ── -->
+    <section class="page" data-page="3">
+      <div class="ph"><h2>出片</h2><p>先预览，再导出。检查项如实显示，不谎报格式。</p></div>
+
+      <div class="checks" id="checks"></div>
+
+      <div class="capcard">
+        <div class="caphead">编码能力 <span id="capBadge" class="badge">检测中…</span></div>
+        <div id="capText">正在检测浏览器可录制的格式。</div>
+      </div>
+
+      <div class="fld"><span>平台发布 <em>封面与视频分开传</em></span>
+        <button id="btnExportCover" class="primary">⬇ 导出平台封面 PNG</button>
+        <div class="hintbox" style="margin:10px 0 0"><p>封面是独立静态图，含栏目名、期号、标题、悬念句与免责声明；发布时单独上传，比从视频里截一帧清楚得多。</p></div>
+      </div>
+
+      <div class="fld"><span>视频 / 逐帧</span>
+        <button id="btnExportPng" class="ghost wide">⬇ 导出逐帧 PNG 联系表</button>
+        <button id="btnExportWebm" class="ghost wide">🎬 录制 WebM（带声音）</button>
+        <div class="expstat" id="expStat">尚未导出。</div>
+        <div class="synthbar"><div id="expFill"></div></div>
+      </div>
+
+      <div class="hintbox">
+        <b>关于 MP4</b>
+        <p>浏览器大多只能直接录 WebM（VP9/VP8 + Opus）。要 MP4 时，导出后用本地命令转码；不谎报成 MP4。</p>
+        <button id="btnCopyFf" class="ghost">⧉ 复制 ffmpeg 命令</button>
+        <code id="ffCmd">ffmpeg -i 帧语短片.webm -c:v libx264 -c:a aac 帧语短片.mp4</code>
+      </div>
+
+      <button class="ghost wide" data-go="1">← 回到内容</button>
+    </section>
+  </aside>
+
+  <!-- ══ 右：预览舞台 ══ -->
+  <main class="stage" id="stage">
+    <div class="stagehead">
+      <span id="frameInfo">01 / 04 · 钩子 · 1080×1920</span>
+      <button id="btnFit" class="ico small" title="适应窗口">⤢ 适应</button>
+    </div>
+
+    <div class="canvaswrap" id="canvaswrap">
+      <div class="framescaler" id="scaler">
+        <!-- 画面卡片：DOM 自动布局，1080×1920 逻辑像素，导出同源 -->
+        <div class="frame" id="frame" data-beat="hook" data-tpl="pop"></div>
+      </div>
+    </div>
+
+    <!-- 播放器 -->
+    <div class="transport">
+      <button id="btnPlay" title="播放 / 暂停">▶</button>
+      <button id="btnReplay" title="重播">⏮</button>
+      <div class="seek" id="seek"><div class="seekfill" id="seekfill"></div><div class="seekhead" id="seekhead"></div></div>
+      <span class="tm" id="tm">0.0 / 0.0s</span>
+      <button id="btnSub" class="tbtn on" title="字幕开 / 关">字幕</button>
+      <button id="btnSound" class="tbtn on" title="声音开 / 关">声音</button>
+      <button id="btnFull" class="tbtn" title="全屏预览">⛶ 全屏</button>
+    </div>
+
+    <!-- 四拍时间轴：一色带，可点跳 -->
+    <div class="timeline" id="timeline"></div>
+  </main>
+</div>
+
+<!-- 主题浮层 -->
+<div class="pop" id="themePop" hidden>
+  <div class="popinner">
+    <h3>界面主题</h3><p>只改工作台配色，不影响成片画面。</p>
+    <div class="skins" id="skins">
+      <button class="on" data-k="ink">深色</button><button data-k="light">浅色</button>
+    </div>
+    <button id="themeClose" class="ghost wide">关闭</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="vendor/lamejs.js"></script>
+<script src="layouts.js"></script>
+<script src="skeletons.js"></script>
+<script src="app.js"></script>
+<script src="studio.js"></script>
+</body>
+</html>
